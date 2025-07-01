@@ -18,7 +18,7 @@ services:
 
   web:
     build: .
-    container_name: rails
+    container_name: ngnix_rails_1
     command: bash -c "rm -f tmp/pids/server.pid && rails server -b 0.0.0.0"
     volumes:
       - .:/myapp
