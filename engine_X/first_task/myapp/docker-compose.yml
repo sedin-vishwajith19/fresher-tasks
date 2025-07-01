@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root1234
+      MYSQL_DATABASE: myapp_development
+      MYSQL_USER: myapp
+      MYSQL_PASSWORD: myapp_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  web:
+    build: .
+    container_name: rails
+    command: bash -c "rm -f tmp/pids/server.pid && rails server -b 0.0.0.0"
+    volumes:
+      - .:/myapp
+    ports:
+      - "3000:3000"
+    environment:
+      RAILS_ENV: development
+      RAILS_MAX_THREADS: 5
+      MYAPP_DATABASE_PASSWORD: myapp_password
+    depends_on:
+      - db
+    networks:
+      - app-network
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - /home/vishwajith/ngnix/first_task/reverse-proxy.conf:/etc/nginx/conf.d/
+    depends_on:
+      - web
+    networks:
+      - app-network
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
+    driver: bridge
