@@ -6,10 +6,6 @@ pipeline {
         disableConcurrentBuilds()
     }
 
-    environment {
-        APP_NAME = "sample-app"
-    }
-
     stages {
 
         stage('Checkout') {
