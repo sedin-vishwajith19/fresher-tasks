@@ -1,0 +1,57 @@
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+    }
+
+    environment {
+        APP_NAME = "sample-app"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                sh"
+                git clone https://github.com/sedin-vishwajith19/fresher-tasks.git
+                "
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "Building ${APP_NAME}"
+                // example
+                sh '''
+                cd engine_X/second_task/myapp
+                docker build -t ruby-app .
+                '''
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo "Running tests"
+                sh '''
+                  docker compose up -d --build
+                '''
+            }
+        }
+
+    }
+
+    post {
+        success {
+            echo "CI pipeline succeeded for commit ${env.GIT_COMMIT}"
+        }
+        failure {
+            echo "CI pipeline failed"
+        }
+        always {
+            cleanWs()
+        }
+    }
+}
+
