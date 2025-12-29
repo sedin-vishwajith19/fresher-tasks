@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent {
+    label "${params.RUNNER_LABEL}"
+  }
 
     options {
         timestamps()
