@@ -18,7 +18,7 @@ pipeline {
   }
 
   environment {
-    APP_NAME = "ruby-app"
+    APP_NAME = "ruby-application"
   }
 
   stages {
