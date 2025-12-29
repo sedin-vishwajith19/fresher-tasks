@@ -1,55 +1,66 @@
 pipeline {
-    agent {
+
+  agent {
     label "${params.RUNNER_LABEL}"
   }
 
-    options {
-        timestamps()
-        disableConcurrentBuilds()
+  parameters {
+    string(
+      name: 'RUNNER_LABEL',
+      defaultValue: '',
+      description: 'Ephemeral runner label passed from infra CI'
+    )
+  }
+
+  options {
+    timestamps()
+    disableConcurrentBuilds()
+  }
+
+  environment {
+    APP_NAME = "ruby-app"
+  }
+
+  stages {
+
+    stage('Checkout') {
+      steps {
+        sh '''
+          git clone https://github.com/sedin-vishwajith19/fresher-tasks.git
+        '''
+      }
     }
 
-    stages {
-
-        stage('Checkout') {
-            steps {
-                sh"
-                git clone https://github.com/sedin-vishwajith19/fresher-tasks.git
-                "
-            }
-        }
-
-        stage('Build') {
-            steps {
-                echo "Building ${APP_NAME}"
-                // example
-                sh '''
-                cd engine_X/second_task/myapp
-                docker build -t ruby-app .
-                '''
-            }
-        }
-
-        stage('Test') {
-            steps {
-                echo "Running tests"
-                sh '''
-                  docker compose up -d --build
-                '''
-            }
-        }
-
+    stage('Build') {
+      steps {
+        echo "Building ${APP_NAME}"
+        sh '''
+          cd engine_X/second_task/myapp
+          docker build -t ruby-app .
+        '''
+      }
     }
 
-    post {
-        success {
-            echo "CI pipeline succeeded for commit ${env.GIT_COMMIT}"
-        }
-        failure {
-            echo "CI pipeline failed"
-        }
-        always {
-            cleanWs()
-        }
+    stage('Test') {
+      steps {
+        echo "Running tests"
+        sh '''
+          docker compose up -d --build
+        '''
+      }
     }
+  }
+
+  post {
+    success {
+      echo "CI pipeline succeeded"
+    }
+    failure {
+      echo "CI pipeline failed"
+    }
+    always {
+      cleanWs()
+    }
+  }
 }
 
