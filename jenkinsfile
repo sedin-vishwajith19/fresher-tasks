@@ -1,7 +1,7 @@
 pipeline {
 
   agent {
-    label "${params.RUNNER_LABEL}"
+    label "runner"
   }
 
   parameters {
