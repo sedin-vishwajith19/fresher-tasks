@@ -1,7 +1,7 @@
 pipeline {
 
   agent {
-    label "runner"
+    label "demo-temp-runner"
   }
 
   parameters {
