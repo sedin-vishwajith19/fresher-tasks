@@ -40,15 +40,6 @@ pipeline {
         '''
       }
     }
-
-    stage('Test') {
-      steps {
-        echo "Running tests"
-        sh '''
-          docker compose up -d --build
-        '''
-      }
-    }
   }
 
   post {
