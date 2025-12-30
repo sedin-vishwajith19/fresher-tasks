@@ -8,7 +8,7 @@ pipeline {
     string(
       name: 'RUNNER_LABEL',
       defaultValue: '',
-      description: ' Ephemeral runner label passed from infra CI'
+      description: 'Ephemeral runner label passed from infra CI'
     )
   }
 
