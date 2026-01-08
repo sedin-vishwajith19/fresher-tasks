@@ -1,16 +1,10 @@
+@Library('temparory-runner-lib') _
+
+def runnerLabel = null
+
 pipeline {
 
-  agent {
-    label "demo-temp-runner"
-  }
-
-  parameters {
-    string(
-      name: 'RUNNER_LABEL',
-      defaultValue: '',
-      description: ' Ephemeral runner label passed from infra CI'
-    )
-  }
+  agent { label "master"}
 
   options {
     timestamps()
@@ -19,39 +13,78 @@ pipeline {
 
   environment {
     APP_NAME = "ruby-application"
+    REPO_URL = "https://github.com/sedin-vishwajith19/fresher-tasks.git"
   }
 
   stages {
 
-    stage('Checkout') {
+    /* ----------------------------------------------------
+     * STAGE 1: Provision Ephemeral EC2 Runner
+     * -------------------------------------------------- */
+    stage('Provision Temp Runner') {
+      agent any
       steps {
-        sh '''
-          git clone https://github.com/sedin-vishwajith19/fresher-tasks.git
-        '''
+        script {
+          runnerLabel = provisionTempRunner(
+            instanceType: 't3.small',
+            volumeSize: 30,
+            iamRole: 'jenkins-runner-role',
+            amiId: 'ami-08f8b26362625bca6'
+          )
+        }
       }
     }
 
-    stage('Build') {
-      steps {
-        echo "Building ${APP_NAME}"
-        sh '''
-          cd engine_X/second_task/myapp
-          docker build -t ruby-app .
-        '''
+    /* ----------------------------------------------------
+     * STAGE 2: CI on Ephemeral Runner
+     * -------------------------------------------------- */
+    stage('CI Pipeline') {
+      agent { label runnerLabel }
+
+      stages {
+
+        stage('Checkout') {
+          steps {
+            checkout([
+              $class: 'GitSCM',
+              branches: [[name: '*/main']],
+              userRemoteConfigs: [[url: env.REPO_URL]]
+            ])
+          }
+        }
+
+        stage('Build') {
+          steps {
+            echo "Building ${APP_NAME}"
+            sh '''
+              cd engine_X/second_task/myapp
+              docker build -t ruby-app:${BUILD_NUMBER} .
+            '''
+          }
+        }
       }
     }
   }
 
+  /* ----------------------------------------------------
+   * CLEANUP (ALWAYS RUNS)
+   * -------------------------------------------------- */
   post {
+    always {
+      script {
+        if (runnerLabel) {
+          destroyTempRunner(runnerLabel)
+        }
+      }
+      cleanWs()
+    }
+
     success {
       echo "CI pipeline succeeded"
     }
+
     failure {
       echo "CI pipeline failed"
     }
-    always {
-      cleanWs()
-    }
   }
 }
-
