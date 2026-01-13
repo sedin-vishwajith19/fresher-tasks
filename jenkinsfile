@@ -12,7 +12,7 @@ pipeline {
   }
 
   environment {
-    APP_NAME = "ruby-application"
+    APP_NAME = "python-application"
     REPO_URL = "https://github.com/sedin-vishwajith19/fresher-tasks.git"
   }
 
